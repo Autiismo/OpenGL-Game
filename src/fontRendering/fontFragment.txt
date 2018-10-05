@@ -1,0 +1,56 @@
+#version 330
+
+in vec2 pass_textureCoords;
+
+out vec4 out_color;
+
+uniform vec3 color;
+uniform sampler2D fontAtlas;
+uniform int effect;
+
+uniform float width;
+uniform float edge;
+
+uniform float borderWidth;
+uniform float borderEdge;
+
+uniform float bubbleWidth;
+uniform float bubbleEdge;
+
+uniform float glowWidth;
+uniform float glowEdge;
+
+uniform float dropWidth;
+uniform float dropEdge;
+
+uniform vec2 offset;
+
+uniform vec3 outlineColor;
+
+void main(void){
+	
+	float distance = 1.0 - texture(fontAtlas, pass_textureCoords).a;
+	float alpha = 1.0 - smoothstep(width, width + edge, distance);
+	
+	float distance2 = 1.0 - texture(fontAtlas, pass_textureCoords).a;
+	float outlineAlpha = 1.0 - smoothstep(borderWidth, borderWidth + borderEdge, distance2);
+	
+	if(effect == 1) {
+		distance2 = 1.0 - texture(fontAtlas, pass_textureCoords).a;
+		outlineAlpha = 1.0 - smoothstep(bubbleWidth, bubbleWidth + bubbleEdge, distance2);
+	}
+	if(effect == 2) {
+		distance2 = 1.0 - texture(fontAtlas, pass_textureCoords).a;
+		outlineAlpha = 1.0 - smoothstep(glowWidth, glowWidth + glowEdge, distance2);
+	}
+	if(effect == 3) {
+		distance2 = 1.0 - texture(fontAtlas, pass_textureCoords + offset).a;
+		outlineAlpha = 1.0 - smoothstep(dropWidth, dropWidth + dropEdge, distance2);
+	}
+	
+	float overallAlpha = alpha + (1.0 - alpha) * outlineAlpha;
+	vec3 overallColor = mix(outlineColor, color, alpha / overallAlpha);
+	
+	out_color = vec4(overallColor, overallAlpha);
+	
+}
