@@ -17,11 +17,31 @@ public class Ray {
 	
 	public Ray(Vector3f position, Vector3f direction, float distance, float maxDistance, Hitbox collider) {
 		this.position = position;
-		this.direction = Maths.squish(new Vector3f(position.x - direction.x, position.y - direction.y, position.z - direction.z));
+		this.direction = getOffset(position, direction, distance);
 		this.distance = distance;
 		this.maxDistance = maxDistance;
 		
 		collided = checkCollisions(collider);
+	}
+	
+	private Vector3f getOffset(Vector3f position, Vector3f direction, float hop) {
+		float xOff = Math.abs(position.x - direction.x);
+		float yOff = Math.abs(position.y - direction.y);
+		float zOff = Math.abs(position.z - direction.z);
+		float xzDist= Math.sqrt(Math.pow(xOff, 2) + Math.pow(zOff, 2));
+		float distance = Math.sqrt(Math.pow(xOff, 2) + Math.pow(yOff, 2) + Math.pow(zOff, 2));
+		
+		float theta = Math.asin(xOff / xzDist);
+		float yTheta = Math.asin(yOff / distance);
+		
+		distance *= hop;
+		xzDist *= hop;
+		
+		float xOff2 = xzDist * Math.sin(theta);
+		float yOff2 = distance * Math.sin(yTheta);
+		float zOff2 = xzDist * Math.cos(theta);
+		
+		return new Vector3f(xOff2, yOff2, zOff2);
 	}
 	
 	public boolean checkCollisions(Hitbox collider) {
